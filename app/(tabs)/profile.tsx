@@ -10,8 +10,7 @@ import { useApp } from '@/src/viewmodels/AppContext';
 
 export default function ProfileScreen() {
   const { prefs } = useApp();
-  const { language, theme } = prefs;
-  const isDark = theme === 'dark';
+  const { language } = prefs;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState<User | null>(null);
@@ -32,44 +31,20 @@ export default function ProfileScreen() {
     });
   };
 
-  const inputColors = {
-    backgroundColor: isDark ? '#1A1F2B' : '#FFFFFF',
-    borderColor: isDark ? '#2C3446' : '#999999',
-    color: isDark ? '#EAF0FF' : '#111111',
-  };
-
-  const buttonStyle = {
-    borderColor: isDark ? '#3C4962' : '#999999',
-    backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
-  };
-
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title">{t(language, 'profile')}</ThemedText>
       <ThemedText>{t(language, 'auth')}</ThemedText>
       {!!user && <ThemedText>Logged as: {user.email}</ThemedText>}
 
-      <TextInput
-        style={[styles.input, inputColors]}
-        placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
-        placeholder={t(language, 'email')}
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={[styles.input, inputColors]}
-        placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
-        placeholder={t(language, 'password')}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+      <TextInput style={styles.input} placeholder={t(language, 'email')} value={email} onChangeText={setEmail} />
+      <TextInput style={styles.input} placeholder={t(language, 'password')} value={password} onChangeText={setPassword} secureTextEntry />
 
-      <Pressable style={[styles.btn, buttonStyle]} onPress={() => register(email, password).then(setUser)}>
+      <Pressable style={styles.btn} onPress={() => register(email, password).then(setUser)}>
         <ThemedText>{t(language, 'register')}</ThemedText>
       </Pressable>
       <Pressable
-        style={[styles.btn, buttonStyle]}
+        style={styles.btn}
         onPress={() =>
           login(email, password).then((u) => {
             if (!u) Alert.alert('Auth', 'Invalid credentials');
@@ -79,13 +54,13 @@ export default function ProfileScreen() {
         <ThemedText>{t(language, 'login')}</ThemedText>
       </Pressable>
 
-      <Pressable style={[styles.btn, buttonStyle]} onPress={readLocation}>
+      <Pressable style={styles.btn} onPress={readLocation}>
         <ThemedText>{t(language, 'location')}</ThemedText>
       </Pressable>
       {!!location && <ThemedText>{location}</ThemedText>}
 
       <Pressable
-        style={[styles.btn, { ...buttonStyle, backgroundColor: isDark ? '#26334A' : '#FFFFFF' }]}
+        style={styles.btn}
         onPress={() =>
           Share.share({
             message: 'I completed my workout today in Fit App 💪',
@@ -99,6 +74,6 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 10 },
-  input: { borderWidth: 1, borderRadius: 10, padding: 10 },
+  input: { borderWidth: 1, borderColor: '#999', borderRadius: 10, padding: 10, backgroundColor: 'white' },
   btn: { borderWidth: 1, borderRadius: 10, padding: 10, alignItems: 'center' },
 });
