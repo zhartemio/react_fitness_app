@@ -9,7 +9,7 @@
 - Сплеш-экран через `expo-splash-screen`.
 - Локализация RU/EN.
 - Светлая/темная тема с сохранением.
-- Локальная «БД» (JSON storage) с CRUD для записей тренировок: `title`, `description`, `date`, `category`.
+- Локальная БД для тренировок через SQLite (если `expo-sqlite` доступен) с fallback на локальное хранилище, CRUD для `title`, `description`, `date`, `category`.
 
 ### Лабораторная работа 2
 - Архитектура MVVM (`src/viewmodels`) + репозиторий (`src/repositories`) + сервисы (`src/services`).

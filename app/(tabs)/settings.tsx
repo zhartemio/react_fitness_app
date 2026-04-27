@@ -8,6 +8,12 @@ import { useApp } from '@/src/viewmodels/AppContext';
 export default function SettingsScreen() {
   const { prefs } = useApp();
   const { language, theme, updateLanguage, updateTheme } = prefs;
+  const isDark = theme === 'dark';
+
+  const btnStyle = {
+    borderColor: isDark ? '#3C4962' : '#999999',
+    backgroundColor: isDark ? '#1B2536' : '#FFFFFF',
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -15,10 +21,10 @@ export default function SettingsScreen() {
 
       <ThemedText>{t(language, 'language')}</ThemedText>
       <View style={styles.row}>
-        <Pressable style={styles.btn} onPress={() => updateLanguage('ru')}>
+        <Pressable style={[styles.btn, btnStyle]} onPress={() => updateLanguage('ru')}>
           <ThemedText>RU</ThemedText>
         </Pressable>
-        <Pressable style={styles.btn} onPress={() => updateLanguage('en')}>
+        <Pressable style={[styles.btn, { ...btnStyle, backgroundColor: isDark ? '#24334A' : '#FFFFFF' }]} onPress={() => updateLanguage('en')}>
           <ThemedText>EN</ThemedText>
         </Pressable>
       </View>
@@ -27,10 +33,10 @@ export default function SettingsScreen() {
         {t(language, 'theme')}: {theme}
       </ThemedText>
       <View style={styles.row}>
-        <Pressable style={styles.btn} onPress={() => updateTheme('light')}>
+        <Pressable style={[styles.btn, btnStyle]} onPress={() => updateTheme('light')}>
           <ThemedText>{t(language, 'light')}</ThemedText>
         </Pressable>
-        <Pressable style={styles.btn} onPress={() => updateTheme('dark')}>
+        <Pressable style={[styles.btn, { ...btnStyle, backgroundColor: isDark ? '#202C40' : '#FFFFFF' }]} onPress={() => updateTheme('dark')}>
           <ThemedText>{t(language, 'dark')}</ThemedText>
         </Pressable>
       </View>

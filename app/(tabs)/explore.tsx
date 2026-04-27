@@ -11,7 +11,8 @@ import { useApp } from '@/src/viewmodels/AppContext';
 
 export default function ApiScreen() {
   const { prefs, workouts } = useApp();
-  const { language } = prefs;
+  const { language, theme } = prefs;
+  const isDark = theme === 'dark';
   const [online, setOnline] = useState<boolean>(true);
   const [weatherText, setWeatherText] = useState('-');
   const [cloudCount, setCloudCount] = useState(0);
@@ -43,12 +44,20 @@ export default function ApiScreen() {
       <ThemedText>{weatherText}</ThemedText>
       <ThemedText>Cloud items: {cloudCount}</ThemedText>
 
-      <Pressable style={styles.button} onPress={() => saveToCloud(workouts.items)}>
+      <Pressable
+        style={[
+          styles.button,
+          { borderColor: isDark ? '#3C4962' : '#999999', backgroundColor: isDark ? '#1D283A' : '#FFFFFF' },
+        ]}
+        onPress={() => saveToCloud(workouts.items)}>
         <ThemedText>{t(language, 'sync')}</ThemedText>
       </Pressable>
 
       <Pressable
-        style={styles.button}
+        style={[
+          styles.button,
+          { borderColor: isDark ? '#3C4962' : '#999999', backgroundColor: isDark ? '#24344D' : '#FFFFFF' },
+        ]}
         onPress={() =>
           scheduleInAppReminder(() => {
             Alert.alert('Reminder', 'Пора на тренировку!');
