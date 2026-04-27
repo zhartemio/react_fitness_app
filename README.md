@@ -1,50 +1,40 @@
-# Welcome to your Expo app 👋
+# Fitness App (React Native + Expo)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Учебный проект для лабораторных работ 1-4.
 
-## Get started
+## Что реализовано
 
-1. Install dependencies
+### Лабораторная работа 1
+- UI из 4 экранов: Workouts, API, Settings, Profile + экран деталей записи.
+- Сплеш-экран через `expo-splash-screen`.
+- Локализация RU/EN.
+- Светлая/темная тема с сохранением.
+- Локальная БД для тренировок через SQLite (если `expo-sqlite` доступен) с fallback на локальное хранилище, CRUD для `title`, `description`, `date`, `category`.
 
-   ```bash
-   npm install
-   ```
+### Лабораторная работа 2
+- Архитектура MVVM (`src/viewmodels`) + репозиторий (`src/repositories`) + сервисы (`src/services`).
+- Web API: Open-Meteo.
+- Проверка сети (`navigator.onLine` + fallback ping).
+- Оффлайн-кэш API в локальном хранилище.
 
-2. Start the app
+### Лабораторная работа 3
+- Поиск, фильтрация, сортировка, нечеткий поиск (Levenshtein).
+- Напоминания (in-app timer уведомления).
+- «Удаленная БД» и обновления через подписку (`cloudService` demo).
 
-   ```bash
-   npx expo start
-   ```
+### Лабораторная работа 4
+- Регистрация и вход (demo auth в локальном хранилище).
+- Обновления данных в реальном времени через подписку на cloudService.
+- Platform API: геолокация.
+- Соцсети: системный Share.
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Запуск
 
 ```bash
-npm run reset-project
+npm install
+npm run start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Важно
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Из-за ограничений окружения зависимости для production-реализации (Firebase/SQLite/Push notifications) не добавлялись. В проекте сделаны учебные аналоги на встроенных API.
