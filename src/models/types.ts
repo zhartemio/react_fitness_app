@@ -1,11 +1,13 @@
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = "light" | "dark";
 
 export interface WorkoutRecord {
   id: string;
   title: string;
   description: string;
   date: string;
-  category: 'cardio' | 'strength' | 'stretch';
+  category: "cardio" | "strength" | "stretch";
+  imageUrl?: string;
+  imageLocalUri?: string;
 }
 
 export interface WeatherInfo {
