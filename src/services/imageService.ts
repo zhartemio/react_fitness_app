@@ -1,116 +1,164 @@
-// src/services/imageService.ts
-import { File } from "expo-file-system";
-import * as ImagePicker from "expo-image-picker";
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
-// !!! ЗАМЕНИ НА СВОИ КЛЮЧИ ИЗ IMAGEKIT !!!
-const IMAGEKIT_PRIVATE_KEY = "private_nGLnKTSmsqGBsfKR8tlN80p2GuU=";
-const IMAGEKIT_URL_ENDPOINT = "https://ik.imagekit.io/ozfxy95et";
-
-// Проверка при загрузке
-console.log(
-  "🔧 ImageKit загружен, ключ:",
-  IMAGEKIT_PRIVATE_KEY ? "✅ есть" : "❌ нет",
-);
-
-// Сделать фото
-export async function takePhoto(): Promise<string | null> {
-  console.log("📷 takePhoto вызвана");
-
-  const { status } = await ImagePicker.requestCameraPermissionsAsync();
-  if (status !== "granted") {
-    console.log("❌ Нет разрешения на камеру");
-    return null;
-  }
-
-  const result = await ImagePicker.launchCameraAsync({
-    allowsEditing: true,
-    quality: 0.8,
-  });
-
-  if (!result.canceled && result.assets[0]?.uri) {
-    console.log("✅ Фото сделано:", result.assets[0].uri);
-    return result.assets[0].uri;
-  }
-  return null;
+export interface ImageKitAuthParams {
+  signature: string;
+  expire: string | number;
+  token: string;
+  publicKey?: string;
 }
 
-// Выбрать фото из галереи
-export async function pickImage(): Promise<string | null> {
-  console.log("🖼️ pickImage вызвана");
-
-  const result = await ImagePicker.launchImageLibraryAsync({
-    allowsEditing: true,
-    quality: 0.8,
-  });
-
-  if (!result.canceled && result.assets[0]?.uri) {
-    console.log("✅ Фото выбрано:", result.assets[0].uri);
-    return result.assets[0].uri;
-  }
-  return null;
+export interface ImageKitUploadOptions {
+  fileName?: string;
+  folder?: string;
+  tags?: string[];
+  useUniqueFileName?: boolean;
 }
 
-// Загрузить фото в ImageKit (версия с новым File API)
-export async function uploadImageToFirebase(
-  workoutId: string,
-  localUri: string,
-): Promise<string | null> {
-  console.log("📤 uploadImageToFirebase (ImageKit) вызвана");
-  console.log("📤 workoutId:", workoutId);
-  console.log("📤 localUri:", localUri);
+export interface ImageKitImage {
+  fileId: string;
+  name: string;
+  url: string;
+  thumbnailUrl?: string;
+  filePath?: string;
+  height?: number;
+  width?: number;
+  size?: number;
+}
 
-  if (!IMAGEKIT_PRIVATE_KEY) {
-    console.error("❌ ImageKit НЕ НАСТРОЕН!");
-    return null;
+interface ImageKitConfig {
+  publicKey: string;
+  urlEndpoint: string;
+  authEndpoint: string;
+}
+
+const UPLOAD_URL = 'https://upload.imagekit.io/api/v1/files/upload';
+const DEFAULT_FOLDER = '/fitness-app/workouts';
+
+function readExtra(name: string): string | undefined {
+  const extra = Constants.expoConfig?.extra as Record<string, string | undefined> | undefined;
+  return extra?.[name];
+}
+
+export function getImageKitConfig(): ImageKitConfig {
+  return {
+    publicKey: readExtra('imageKitPublicKey') ?? '',
+    urlEndpoint: (readExtra('imageKitUrlEndpoint') ?? '').replace(/\/$/, ''),
+    authEndpoint: readExtra('imageKitAuthEndpoint') ?? '',
+  };
+}
+
+export function isImageKitConfigured() {
+  const config = getImageKitConfig();
+  return Boolean(config.publicKey && config.urlEndpoint && config.authEndpoint);
+}
+
+function assertConfigured(config: ImageKitConfig) {
+  const missing = [
+    !config.publicKey && 'EXPO_PUBLIC_IMAGEKIT_PUBLIC_KEY',
+    !config.urlEndpoint && 'EXPO_PUBLIC_IMAGEKIT_URL_ENDPOINT',
+    !config.authEndpoint && 'EXPO_PUBLIC_IMAGEKIT_AUTH_ENDPOINT',
+  ].filter(Boolean);
+
+  if (missing.length > 0) {
+    throw new Error(`ImageKit is not configured. Missing: ${missing.join(', ')}`);
+  }
+}
+
+async function getAuthParams(config: ImageKitConfig): Promise<ImageKitAuthParams> {
+  const response = await fetch(config.authEndpoint);
+
+  if (!response.ok) {
+    throw new Error(`ImageKit auth failed: ${response.status}`);
   }
 
-  try {
-    // Создаем объект File из локального URI
-    const photoFile = new File(localUri);
-    console.log("📤 Файл создан, существует?", photoFile.exists);
+  const data = (await response.json()) as ImageKitAuthParams;
 
-    // Получаем base64 из файла (новый метод)
-    const base64 = await photoFile.base64();
-    console.log("📤 Размер base64:", base64.length, "символов");
-
-    // Определяем тип файла
-    const mimeType = localUri.endsWith(".png") ? "image/png" : "image/jpeg";
-    const fileName = `workout_${workoutId}_${Date.now()}.jpg`;
-
-    console.log("📤 Загрузка в ImageKit...");
-
-    // Формируем FormData
-    const formData = new FormData();
-    formData.append("file", `data:${mimeType};base64,${base64}`);
-    formData.append("fileName", fileName);
-    formData.append("useUniqueFileName", "true");
-    formData.append("folder", "/workout_photos");
-
-    // Отправляем запрос
-    const auth = btoa(IMAGEKIT_PRIVATE_KEY + ":");
-
-    const response = await fetch(
-      "https://upload.imagekit.io/api/v1/files/upload",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
-        body: formData,
-      },
-    );
-
-    const data = await response.json();
-
-    if (response.ok && data.url) {
-      console.log("✅ Фото загружено в ImageKit:", data.url);
-      return data.url;
-    } else {
-      console.error("❌ Ошибка ImageKit:", data);
-      return null;
-    }
-  } catch (error) {
-    console.error("❌ Ошибка загрузки в ImageKit:", error);
-    return null;
+  if (!data.signature || !data.expire || !data.token) {
+    throw new Error('ImageKit auth response must contain signature, expire and token.');
   }
+
+  return data;
+}
+
+function guessFileName(uri: string, provided?: string) {
+  if (provided?.trim()) return provided.trim();
+
+  const cleanUri = uri.split('?')[0];
+  const lastSegment = cleanUri.split('/').filter(Boolean).pop();
+  return lastSegment?.includes('.') ? lastSegment : `workout-${Date.now()}.jpg`;
+}
+
+function guessMimeType(fileName: string) {
+  const ext = fileName.split('.').pop()?.toLowerCase();
+
+  if (ext === 'png') return 'image/png';
+  if (ext === 'webp') return 'image/webp';
+  if (ext === 'gif') return 'image/gif';
+  if (ext === 'heic' || ext === 'heif') return 'image/heic';
+
+  return 'image/jpeg';
+}
+
+function appendFile(formData: FormData, uri: string, fileName: string) {
+  if (Platform.OS === 'web') {
+    formData.append('file', uri);
+    return;
+  }
+
+  formData.append('file', {
+    uri,
+    name: fileName,
+    type: guessMimeType(fileName),
+  } as unknown as Blob);
+}
+
+export async function uploadImageToImageKit(uri: string, options: ImageKitUploadOptions = {}): Promise<ImageKitImage> {
+  const config = getImageKitConfig();
+  assertConfigured(config);
+
+  const auth = await getAuthParams(config);
+  const fileName = guessFileName(uri, options.fileName);
+  const formData = new FormData();
+
+  appendFile(formData, uri, fileName);
+  formData.append('fileName', fileName);
+  formData.append('publicKey', auth.publicKey ?? config.publicKey);
+  formData.append('signature', auth.signature);
+  formData.append('expire', String(auth.expire));
+  formData.append('token', auth.token);
+  formData.append('folder', options.folder ?? DEFAULT_FOLDER);
+  formData.append('useUniqueFileName', String(options.useUniqueFileName ?? true));
+
+  if (options.tags?.length) {
+    formData.append('tags', options.tags.join(','));
+  }
+
+  const response = await fetch(UPLOAD_URL, {
+    method: 'POST',
+    body: formData,
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message = payload?.message ?? payload?.error?.message ?? `ImageKit upload failed: ${response.status}`;
+    throw new Error(message);
+  }
+
+  return payload as ImageKitImage;
+}
+
+export function getImageKitImageUrl(pathOrUrl?: string | null) {
+  if (!pathOrUrl) return null;
+
+  if (/^https?:\/\//i.test(pathOrUrl)) {
+    return pathOrUrl;
+  }
+
+  const { urlEndpoint } = getImageKitConfig();
+  if (!urlEndpoint) return pathOrUrl;
+
+  const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+  return `${urlEndpoint}${path}`;
 }

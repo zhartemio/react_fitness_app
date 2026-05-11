@@ -1,8 +1,10 @@
+import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { getImageKitImageUrl } from '@/src/services/imageService';
 import { useApp } from '@/src/viewmodels/AppContext';
 
 export default function DetailsScreen() {
@@ -19,8 +21,11 @@ export default function DetailsScreen() {
     );
   }
 
+  const imageUrl = getImageKitImageUrl(item.imageUrl || item.imageFilePath);
+
   return (
     <ThemedView style={styles.container}>
+      {!!imageUrl && <Image source={{ uri: imageUrl }} style={styles.image} contentFit="cover" />}
       <ThemedText type="title">{item.title}</ThemedText>
       <ThemedText>{item.description}</ThemedText>
       <ThemedText>{item.category}</ThemedText>
@@ -31,4 +36,5 @@ export default function DetailsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 8 },
+  image: { width: '100%', height: 220, borderRadius: 12 },
 });

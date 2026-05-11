@@ -1,6 +1,12 @@
 export type ThemeMode = "light" | "dark";
 
-export interface WorkoutRecord {
+export interface WorkoutImageMetadata {
+  imageUrl?: string;
+  imageFileId?: string;
+  imageFilePath?: string;
+}
+
+export interface WorkoutRecord extends WorkoutImageMetadata {
   id: string;
   title: string;
   description: string;

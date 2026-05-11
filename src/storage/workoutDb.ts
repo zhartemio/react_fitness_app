@@ -40,15 +40,33 @@ async function tryInitSQLite() {
       return false;
     }
 
-    db_local.execAsync?.(`
+    await db.execAsync?.(`
       CREATE TABLE IF NOT EXISTS workouts (
         id TEXT PRIMARY KEY NOT NULL,
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         date TEXT NOT NULL,
-        category TEXT NOT NULL
+        category TEXT NOT NULL,
+        imageUrl TEXT,
+        imageFileId TEXT,
+        imageFilePath TEXT
       );
     `);
+
+    const columns = (await db.getAllAsync?.('PRAGMA table_info(workouts);')) ?? [];
+    const columnNames = new Set(columns.map((column: { name: string }) => column.name));
+
+    if (!columnNames.has('imageUrl')) {
+      await db.execAsync?.('ALTER TABLE workouts ADD COLUMN imageUrl TEXT;');
+    }
+
+    if (!columnNames.has('imageFileId')) {
+      await db.execAsync?.('ALTER TABLE workouts ADD COLUMN imageFileId TEXT;');
+    }
+
+    if (!columnNames.has('imageFilePath')) {
+      await db.execAsync?.('ALTER TABLE workouts ADD COLUMN imageFilePath TEXT;');
+    }
 
     sqliteAvailable = true;
     return true;
@@ -176,16 +194,19 @@ export async function upsertWorkout(record: WorkoutRecord): Promise<void> {
     console.log("📝 SQLite сохранение завершено");
   }
 
-  console.log("📝 Готовимся к saveToFirebase...");
-
-  // Добавь обработку Promise
-  const result = await saveToFirebase(record).catch((error) => {
-    console.log("⚠️ saveToFirebase упал с ошибкой:", error.message);
-    console.log("⚠️ Полная ошибка:", error);
-    return null;
-  });
-
-  console.log("📝 saveToFirebase результат:", result);
+  await db.runAsync?.(
+    'INSERT OR REPLACE INTO workouts (id, title, description, date, category, imageUrl, imageFileId, imageFilePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
+    [
+      record.id,
+      record.title,
+      record.description,
+      record.date,
+      record.category,
+      record.imageUrl ?? null,
+      record.imageFileId ?? null,
+      record.imageFilePath ?? null,
+    ]
+  );
 }
 
 export async function removeWorkout(id: string): Promise<void> {
