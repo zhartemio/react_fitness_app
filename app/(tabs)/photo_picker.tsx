@@ -46,11 +46,11 @@ export function PhotoPicker({
 
       <View style={styles.buttons}>
         <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
-          <Text style={styles.buttonText}>📷 Сделать фото</Text>
+          <Text style={styles.buttonText}>Сделать фото</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={handlePickImage}>
-          <Text style={styles.buttonText}>🖼️ Выбрать из галереи</Text>
+          <Text style={styles.buttonText}>Выбрать из галереи</Text>
         </TouchableOpacity>
       </View>
     </View>
