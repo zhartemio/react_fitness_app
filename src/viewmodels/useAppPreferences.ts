@@ -1,33 +1,35 @@
-import { useEffect, useState } from 'react';
-
-import { Language } from '@/src/localization/i18n';
-import { ThemeMode } from '@/src/models/types';
-import { getItem, setItem } from '@/src/storage/localStore';
-
-const THEME_KEY = 'pref_theme';
-const LANG_KEY = 'pref_lang';
+// useAppPreferences.ts
+import { Language } from "@/src/localization/i18n";
+import { ThemeMode } from "@/src/models/types";
+import {
+  loadLanguage,
+  loadTheme,
+  saveLanguage,
+  saveTheme,
+} from "@/src/storage/prefStorage";
+import { useEffect, useState } from "react";
 
 export function useAppPreferences() {
-  const [theme, setTheme] = useState<ThemeMode>('light');
-  const [language, setLanguage] = useState<Language>('ru');
+  const [theme, setTheme] = useState<ThemeMode>("light");
+  const [language, setLanguage] = useState<Language>("ru");
 
   useEffect(() => {
     (async () => {
-      const t = await getItem(THEME_KEY);
-      const l = await getItem(LANG_KEY);
-      if (t === 'dark' || t === 'light') setTheme(t);
-      if (l === 'ru' || l === 'en') setLanguage(l);
+      const savedTheme = await loadTheme();
+      if (savedTheme) setTheme(savedTheme);
+      const savedLang = await loadLanguage();
+      if (savedLang) setLanguage(savedLang);
     })();
   }, []);
 
   const updateTheme = async (next: ThemeMode) => {
     setTheme(next);
-    await setItem(THEME_KEY, next);
+    await saveTheme(next);
   };
 
   const updateLanguage = async (next: Language) => {
     setLanguage(next);
-    await setItem(LANG_KEY, next);
+    await saveLanguage(next);
   };
 
   return { theme, language, updateTheme, updateLanguage };

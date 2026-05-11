@@ -11,16 +11,20 @@ import { getImageKitImageUrl } from '@/src/services/imageService';
 import { useApp } from '@/src/viewmodels/AppContext';
 import { useWorkoutImageUpload } from '@/src/viewmodels/useWorkoutImageUpload';
 
-const categories: WorkoutRecord['category'][] = ['cardio', 'strength', 'stretch'];
+const categories: WorkoutRecord["category"][] = [
+  "cardio",
+  "strength",
+  "stretch",
+];
 
 export default function HomeScreen() {
   const { prefs, workouts } = useApp();
   const { language, theme } = prefs;
-  const isDark = theme === 'dark';
+  const isDark = theme === "dark";
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<WorkoutRecord['category']>('cardio');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState<WorkoutRecord["category"]>("cardio");
   const [editingId, setEditingId] = useState<string | null>(null);
   const workoutImage = useWorkoutImageUpload();
 
@@ -74,9 +78,9 @@ export default function HomeScreen() {
   };
 
   const inputColors = {
-    backgroundColor: isDark ? '#1A1F2B' : '#FFFFFF',
-    borderColor: isDark ? '#2C3446' : '#999999',
-    color: isDark ? '#EAF0FF' : '#111111',
+    backgroundColor: isDark ? "#1A1F2B" : "#FFFFFF",
+    borderColor: isDark ? "#2C3446" : "#999999",
+    color: isDark ? "#EAF0FF" : "#111111",
   };
 
   const buttonStyle = {
@@ -86,18 +90,18 @@ export default function HomeScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <ThemedText type="title">{t(language, 'home')}</ThemedText>
+      <ThemedText type="title">{t(language, "home")}</ThemedText>
 
       <TextInput
-        placeholder={t(language, 'title')}
-        placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
+        placeholder={t(language, "title")}
+        placeholderTextColor={isDark ? "#93A0B8" : "#6B7280"}
         style={[styles.input, inputColors]}
         value={title}
         onChangeText={setTitle}
       />
       <TextInput
-        placeholder={t(language, 'description')}
-        placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
+        placeholder={t(language, "description")}
+        placeholderTextColor={isDark ? "#93A0B8" : "#6B7280"}
         style={[styles.input, styles.area, inputColors]}
         multiline
         value={description}
@@ -135,9 +139,15 @@ export default function HomeScreen() {
             onPress={() => setCategory(x)}
             style={[
               styles.chip,
-              { borderColor: isDark ? '#3C4962' : '#999999', backgroundColor: isDark ? '#1B2536' : '#FFFFFF' },
-              category === x && { backgroundColor: isDark ? '#2B3952' : '#DADADA' },
-            ]}>
+              {
+                borderColor: isDark ? "#3C4962" : "#999999",
+                backgroundColor: isDark ? "#1B2536" : "#FFFFFF",
+              },
+              category === x && {
+                backgroundColor: isDark ? "#2B3952" : "#DADADA",
+              },
+            ]}
+          >
             <ThemedText>{x}</ThemedText>
           </Pressable>
         ))}
@@ -148,8 +158,8 @@ export default function HomeScreen() {
       </Pressable>
 
       <TextInput
-        placeholder={t(language, 'search')}
-        placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
+        placeholder={t(language, "search")}
+        placeholderTextColor={isDark ? "#93A0B8" : "#6B7280"}
         style={[styles.input, inputColors]}
         value={workouts.search}
         onChangeText={workouts.setSearch}
@@ -164,7 +174,9 @@ export default function HomeScreen() {
         </Pressable>
       </View>
 
-      {workouts.filtered.length === 0 && <ThemedText>{t(language, 'noData')}</ThemedText>}
+      {workouts.filtered.length === 0 && (
+        <ThemedText>{t(language, "noData")}</ThemedText>
+      )}
 
       {workouts.filtered.map((item) => {
         const itemImageUrl = getImageKitImageUrl(item.imageUrl || item.imageFilePath);
@@ -216,8 +228,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 10 },
   input: { borderWidth: 1, borderRadius: 10, padding: 10 },
-  area: { minHeight: 70, textAlignVertical: 'top' },
-  button: { padding: 10, borderWidth: 1, borderRadius: 10, alignItems: 'center' },
+  area: { minHeight: 70, textAlignVertical: "top" },
+  button: {
+    padding: 10,
+    borderWidth: 1,
+    borderRadius: 10,
+    alignItems: "center",
+  },
   card: { padding: 12, borderRadius: 10, borderWidth: 1, gap: 6 },
   cardImage: { width: '100%', height: 160, borderRadius: 10 },
   cardLink: { gap: 6 },

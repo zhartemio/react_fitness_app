@@ -1,4 +1,4 @@
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = "light" | "dark";
 
 export interface WorkoutImageMetadata {
   imageUrl?: string;
@@ -11,7 +11,9 @@ export interface WorkoutRecord extends WorkoutImageMetadata {
   title: string;
   description: string;
   date: string;
-  category: 'cardio' | 'strength' | 'stretch';
+  category: "cardio" | "strength" | "stretch";
+  imageUrl?: string;
+  imageLocalUri?: string;
 }
 
 export interface WeatherInfo {

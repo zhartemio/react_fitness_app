@@ -1,4 +1,4 @@
-export type Language = 'ru' | 'en';
+export type Language = "ru" | "en";
 
 export const translations = {
   ru: {
@@ -81,6 +81,6 @@ export const translations = {
   },
 };
 
-export function t(lang: Language, key: keyof (typeof translations)['ru']) {
+export function t(lang: Language, key: keyof (typeof translations)["ru"]) {
   return translations[lang][key] ?? key;
 }

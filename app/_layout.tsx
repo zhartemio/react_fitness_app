@@ -1,11 +1,15 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
-import 'react-native-reanimated';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useState } from "react";
+import "react-native-reanimated";
 
-import { AppProvider, useApp } from '@/src/viewmodels/AppContext';
+import { AppProvider, useApp } from "@/src/viewmodels/AppContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -15,12 +19,12 @@ function RootNavigator() {
   } = useApp();
 
   return (
-    <ThemeProvider value={theme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={theme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="details/[id]" options={{ title: 'Details' }} />
+        <Stack.Screen name="details/[id]" options={{ title: "Details" }} />
       </Stack>
-      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style={theme === "dark" ? "light" : "dark"} />
     </ThemeProvider>
   );
 }
