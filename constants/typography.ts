@@ -1,0 +1,18 @@
+export const Typography = {
+  defaultFontSize: 13,
+  defaultLineHeight: 18,
+  semiBoldFontSize: 13,
+  semiBoldLineHeight: 18,
+  titleFontSize: 24,
+  titleLineHeight: 28,
+  subtitleFontSize: 16,
+  subtitleLineHeight: 20,
+  linkFontSize: 13,
+  linkLineHeight: 20,
+  inputFontSize: 13,
+  inputLineHeight: 18,
+  tabLabelFontSize: 10,
+  headerTitleFontSize: 15,
+  buttonFontSize: 13,
+  maxFontSizeMultiplier: 1,
+} as const;

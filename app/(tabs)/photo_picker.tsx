@@ -1,3 +1,4 @@
+import { Typography } from "@/constants/typography";
 import { pickImage, takePhoto } from "@/src/services/imageService";
 import React, { useState } from "react";
 import {
@@ -46,11 +47,11 @@ export function PhotoPicker({
 
       <View style={styles.buttons}>
         <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
-          <Text style={styles.buttonText}>Сделать фото</Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>Сделать фото</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={handlePickImage}>
-          <Text style={styles.buttonText}>Выбрать из галереи</Text>
+          <Text style={styles.buttonText} allowFontScaling={false}>Выбрать из галереи</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -80,6 +81,9 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    fontSize: Typography.buttonFontSize,
+    lineHeight: Typography.buttonFontSize + 4,
     fontWeight: "bold",
+    flexShrink: 1,
   },
 });

@@ -1,5 +1,6 @@
 import { StyleSheet, Text, type TextProps } from 'react-native';
 
+import { Typography } from '@/constants/typography';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 export type ThemedTextProps = TextProps & {
@@ -29,32 +30,40 @@ export function ThemedText({
         style,
       ]}
       {...rest}
+      allowFontScaling={false}
+      maxFontSizeMultiplier={Typography.maxFontSizeMultiplier}
     />
   );
 }
 
 const styles = StyleSheet.create({
   default: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: Typography.defaultFontSize,
+    lineHeight: Typography.defaultLineHeight,
+    flexShrink: 1,
   },
   defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: Typography.semiBoldFontSize,
+    lineHeight: Typography.semiBoldLineHeight,
+    flexShrink: 1,
     fontWeight: '600',
   },
   title: {
-    fontSize: 32,
+    fontSize: Typography.titleFontSize,
     fontWeight: 'bold',
-    lineHeight: 32,
+    lineHeight: Typography.titleLineHeight,
+    flexShrink: 1,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: Typography.subtitleFontSize,
+    lineHeight: Typography.subtitleLineHeight,
     fontWeight: 'bold',
+    flexShrink: 1,
   },
   link: {
-    lineHeight: 30,
-    fontSize: 16,
+    lineHeight: Typography.linkLineHeight,
+    fontSize: Typography.linkFontSize,
+    flexShrink: 1,
     textDecorationLine: 'underline',
   },
 });
