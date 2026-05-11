@@ -9,7 +9,12 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to take photos of workouts",
+        "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select workout photos",
+        "NSPhotoLibraryAddUsageDescription": "This app needs access to save workout photos to your library"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +24,15 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.fitnes_app",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET"
+      ],
+      "usesCleartextTraffic": true
     },
     "web": {
       "output": "static",
@@ -37,6 +50,14 @@
           "dark": {
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app needs access to your photos to add images to workouts.",
+          "cameraPermission": "The app needs access to your camera to take photos of workouts."
         }
       ]
     ],

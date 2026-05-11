@@ -1,11 +1,19 @@
-import { WeatherInfo } from '@/src/models/types';
-import { getItem, setItem } from '@/src/storage/localStore';
+import { WeatherInfo } from "@/src/models/types";
+import { getItem, setItem } from "@/src/storage/localStore";
 
-const CACHE_KEY = 'weather_cache';
+const CACHE_KEY = "weather_cache";
 
-export async function getWeather(): Promise<{ data: WeatherInfo | null; cached: boolean }> {
+export async function getWeather(): Promise<{
+  data: WeatherInfo | null;
+  cached: boolean;
+}> {
   try {
-    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=55.75&longitude=37.62&current_weather=true');
+    const latitude = 53.9045;
+    const longitude = 27.5615;
+
+    const res = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`,
+    );
     const json = await res.json();
     const data: WeatherInfo = {
       temperature: json.current_weather.temperature,
@@ -16,6 +24,9 @@ export async function getWeather(): Promise<{ data: WeatherInfo | null; cached: 
     return { data, cached: false };
   } catch {
     const cache = await getItem(CACHE_KEY);
-    return { data: cache ? (JSON.parse(cache) as WeatherInfo) : null, cached: true };
+    return {
+      data: cache ? (JSON.parse(cache) as WeatherInfo) : null,
+      cached: true,
+    };
   }
 }

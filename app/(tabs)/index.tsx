@@ -1,62 +1,127 @@
-import { Link } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Link } from "expo-router";
+import { useMemo, useState } from "react";
+import {
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View
+} from "react-native";
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { t } from '@/src/localization/i18n';
-import { WorkoutRecord } from '@/src/models/types';
-import { useApp } from '@/src/viewmodels/AppContext';
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { t } from "@/src/localization/i18n";
+import { WorkoutRecord } from "@/src/models/types";
+import {
+  pickImage,
+  takePhoto,
+  uploadImageToFirebase,
+} from "@/src/services/imageService";
+import { useApp } from "@/src/viewmodels/AppContext";
 
-const categories: WorkoutRecord['category'][] = ['cardio', 'strength', 'stretch'];
+const categories: WorkoutRecord["category"][] = [
+  "cardio",
+  "strength",
+  "stretch",
+];
 
 export default function HomeScreen() {
   const { prefs, workouts } = useApp();
   const { language, theme } = prefs;
-  const isDark = theme === 'dark';
+  const isDark = theme === "dark";
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<WorkoutRecord['category']>('cardio');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState<WorkoutRecord["category"]>("cardio");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const date = useMemo(() => new Date().toISOString(), []);
 
   const submit = async () => {
     if (!title.trim()) return;
-    await workouts.save({
-      id: editingId ?? Date.now().toString(),
-      title,
-      description,
-      date,
-      category,
-    });
 
-    setTitle('');
-    setDescription('');
-    setEditingId(null);
+    setIsSaving(true);
+
+    try {
+      const workoutId = editingId ?? Date.now().toString();
+      let imageUrl: string | undefined = undefined;
+
+      // Если есть фото - загружаем его в Firebase Storage
+      if (photoUri) {
+        console.log("📤 Загружаем фото для тренировки...");
+        const uploadedUrl = await uploadImageToFirebase(workoutId, photoUri);
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        }
+      }
+
+      // Сохраняем тренировку с фото
+      await workouts.save({
+        id: workoutId,
+        title,
+        description,
+        date,
+        category,
+        imageUrl: imageUrl,
+      });
+
+      // Очищаем форму
+      setTitle("");
+      setDescription("");
+      setEditingId(null);
+      setPhotoUri(null);
+
+      Alert.alert("Успех", "Тренировка сохранена!");
+    } catch (error) {
+      console.error("Ошибка сохранения:", error);
+      Alert.alert("Ошибка", "Не удалось сохранить тренировку");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    const uri = await takePhoto();
+    if (uri) {
+      setPhotoUri(uri);
+    } else {
+      Alert.alert("Ошибка", "Не удалось сделать фото");
+    }
+  };
+
+  const handlePickImage = async () => {
+    const uri = await pickImage();
+    if (uri) {
+      setPhotoUri(uri);
+    } else {
+      Alert.alert("Ошибка", "Не удалось выбрать фото");
+    }
   };
 
   const inputColors = {
-    backgroundColor: isDark ? '#1A1F2B' : '#FFFFFF',
-    borderColor: isDark ? '#2C3446' : '#999999',
-    color: isDark ? '#EAF0FF' : '#111111',
+    backgroundColor: isDark ? "#1A1F2B" : "#FFFFFF",
+    borderColor: isDark ? "#2C3446" : "#999999",
+    color: isDark ? "#EAF0FF" : "#111111",
   };
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <ThemedText type="title">{t(language, 'home')}</ThemedText>
+      <ThemedText type="title">{t(language, "home")}</ThemedText>
 
       <TextInput
-        placeholder={t(language, 'title')}
-        placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
+        placeholder={t(language, "title")}
+        placeholderTextColor={isDark ? "#93A0B8" : "#6B7280"}
         style={[styles.input, inputColors]}
         value={title}
         onChangeText={setTitle}
       />
       <TextInput
-        placeholder={t(language, 'description')}
-        placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
+        placeholder={t(language, "description")}
+        placeholderTextColor={isDark ? "#93A0B8" : "#6B7280"}
         style={[styles.input, styles.area, inputColors]}
         multiline
         value={description}
@@ -70,21 +135,84 @@ export default function HomeScreen() {
             onPress={() => setCategory(x)}
             style={[
               styles.chip,
-              { borderColor: isDark ? '#3C4962' : '#999999', backgroundColor: isDark ? '#1B2536' : '#FFFFFF' },
-              category === x && { backgroundColor: isDark ? '#2B3952' : '#DADADA' },
-            ]}>
+              {
+                borderColor: isDark ? "#3C4962" : "#999999",
+                backgroundColor: isDark ? "#1B2536" : "#FFFFFF",
+              },
+              category === x && {
+                backgroundColor: isDark ? "#2B3952" : "#DADADA",
+              },
+            ]}
+          >
             <ThemedText>{x}</ThemedText>
           </Pressable>
         ))}
       </View>
 
-      <Pressable style={[styles.button, { borderColor: isDark ? '#3C4962' : '#999999', backgroundColor: isDark ? '#202A3C' : '#FFFFFF' }]} onPress={submit}>
-        <ThemedText>{editingId ? t(language, 'edit') : t(language, 'add')}</ThemedText>
+      {/* Кнопки для фото */}
+      <View style={styles.row}>
+        <Pressable
+          style={[
+            styles.chip,
+            {
+              borderColor: isDark ? "#3C4962" : "#999999",
+              backgroundColor: isDark ? "#1B2536" : "#FFFFFF",
+            },
+          ]}
+          onPress={handleTakePhoto}
+        >
+          <ThemedText>📷 Сделать фото</ThemedText>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.chip,
+            {
+              borderColor: isDark ? "#3C4962" : "#999999",
+              backgroundColor: isDark ? "#1B2536" : "#FFFFFF",
+            },
+          ]}
+          onPress={handlePickImage}
+        >
+          <ThemedText>🖼️ Выбрать фото</ThemedText>
+        </Pressable>
+      </View>
+
+      {/* Превью фото */}
+      {photoUri && (
+        <View style={styles.previewContainer}>
+          <Image source={{ uri: photoUri }} style={styles.previewImage} />
+          <Pressable
+            style={styles.removePhoto}
+            onPress={() => setPhotoUri(null)}
+          >
+            <ThemedText>✖️</ThemedText>
+          </Pressable>
+        </View>
+      )}
+
+      <Pressable
+        style={[
+          styles.button,
+          {
+            borderColor: isDark ? "#3C4962" : "#999999",
+            backgroundColor: isDark ? "#202A3C" : "#FFFFFF",
+          },
+        ]}
+        onPress={submit}
+        disabled={isSaving}
+      >
+        <ThemedText>
+          {isSaving
+            ? "Сохранение..."
+            : editingId
+              ? t(language, "edit")
+              : t(language, "add")}
+        </ThemedText>
       </Pressable>
 
       <TextInput
-        placeholder={t(language, 'search')}
-        placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
+        placeholder={t(language, "search")}
+        placeholderTextColor={isDark ? "#93A0B8" : "#6B7280"}
         style={[styles.input, inputColors]}
         value={workouts.search}
         onChangeText={workouts.setSearch}
@@ -92,18 +220,36 @@ export default function HomeScreen() {
 
       <View style={styles.row}>
         <Pressable
-          style={[styles.chip, { borderColor: isDark ? '#3C4962' : '#999999', backgroundColor: isDark ? '#1B2536' : '#FFFFFF' }]}
-          onPress={() => workouts.setSortDesc(!workouts.sortDesc)}>
-          <ThemedText>{t(language, 'sortByDate')}</ThemedText>
+          style={[
+            styles.chip,
+            {
+              borderColor: isDark ? "#3C4962" : "#999999",
+              backgroundColor: isDark ? "#1B2536" : "#FFFFFF",
+            },
+          ]}
+          onPress={() => workouts.setSortDesc(!workouts.sortDesc)}
+        >
+          <ThemedText>{t(language, "sortByDate")}</ThemedText>
         </Pressable>
         <Pressable
-          style={[styles.chip, { borderColor: isDark ? '#3C4962' : '#999999', backgroundColor: isDark ? '#1B2536' : '#FFFFFF' }]}
-          onPress={() => workouts.setCategory(workouts.category === 'all' ? 'cardio' : 'all')}>
-          <ThemedText>{`${t(language, 'filterCategory')}: ${workouts.category}`}</ThemedText>
+          style={[
+            styles.chip,
+            {
+              borderColor: isDark ? "#3C4962" : "#999999",
+              backgroundColor: isDark ? "#1B2536" : "#FFFFFF",
+            },
+          ]}
+          onPress={() =>
+            workouts.setCategory(workouts.category === "all" ? "cardio" : "all")
+          }
+        >
+          <ThemedText>{`${t(language, "filterCategory")}: ${workouts.category}`}</ThemedText>
         </Pressable>
       </View>
 
-      {workouts.filtered.length === 0 && <ThemedText>{t(language, 'noData')}</ThemedText>}
+      {workouts.filtered.length === 0 && (
+        <ThemedText>{t(language, "noData")}</ThemedText>
+      )}
 
       {workouts.filtered.map((item) => (
         <ThemedView
@@ -111,12 +257,23 @@ export default function HomeScreen() {
           style={[
             styles.card,
             {
-              borderColor: isDark ? '#37445D' : '#999999',
-              backgroundColor: isDark ? '#151C2A' : '#FFFFFF',
+              borderColor: isDark ? "#37445D" : "#999999",
+              backgroundColor: isDark ? "#151C2A" : "#FFFFFF",
             },
-          ]}>
-          <Link href={{ pathname: '/details/[id]', params: { id: item.id } }} asChild>
+          ]}
+        >
+          <Link
+            href={{ pathname: "/details/[id]", params: { id: item.id } }}
+            asChild
+          >
             <Pressable>
+              {/* Показываем фото в карточке, если есть */}
+              {item.imageUrl && (
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={styles.cardImage}
+                />
+              )}
               <ThemedText type="subtitle">{item.title}</ThemedText>
               <ThemedText>{item.description}</ThemedText>
               <ThemedText>{new Date(item.date).toLocaleString()}</ThemedText>
@@ -125,19 +282,34 @@ export default function HomeScreen() {
 
           <View style={styles.row}>
             <Pressable
-              style={[styles.smallBtn, { borderColor: isDark ? '#3C4962' : '#999999', backgroundColor: isDark ? '#1D283D' : '#FFFFFF' }]}
+              style={[
+                styles.smallBtn,
+                {
+                  borderColor: isDark ? "#3C4962" : "#999999",
+                  backgroundColor: isDark ? "#1D283D" : "#FFFFFF",
+                },
+              ]}
               onPress={() => {
                 setEditingId(item.id);
                 setTitle(item.title);
                 setDescription(item.description);
                 setCategory(item.category);
-              }}>
-              <ThemedText>{t(language, 'edit')}</ThemedText>
+                setPhotoUri(null); // При редактировании фото нужно будет выбрать заново
+              }}
+            >
+              <ThemedText>{t(language, "edit")}</ThemedText>
             </Pressable>
             <Pressable
-              style={[styles.smallBtn, { borderColor: isDark ? '#754A4A' : '#999999', backgroundColor: isDark ? '#2A1E1E' : '#FFFFFF' }]}
-              onPress={() => workouts.remove(item.id)}>
-              <ThemedText>{t(language, 'delete')}</ThemedText>
+              style={[
+                styles.smallBtn,
+                {
+                  borderColor: isDark ? "#754A4A" : "#999999",
+                  backgroundColor: isDark ? "#2A1E1E" : "#FFFFFF",
+                },
+              ]}
+              onPress={() => workouts.remove(item.id)}
+            >
+              <ThemedText>{t(language, "delete")}</ThemedText>
             </Pressable>
           </View>
         </ThemedView>
@@ -149,10 +321,48 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 10 },
   input: { borderWidth: 1, borderRadius: 10, padding: 10 },
-  area: { minHeight: 70, textAlignVertical: 'top' },
-  button: { padding: 10, borderWidth: 1, borderRadius: 10, alignItems: 'center' },
+  area: { minHeight: 70, textAlignVertical: "top" },
+  button: {
+    padding: 10,
+    borderWidth: 1,
+    borderRadius: 10,
+    alignItems: "center",
+  },
   card: { padding: 12, borderRadius: 10, borderWidth: 1, gap: 6 },
-  row: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  chip: { borderWidth: 1, borderRadius: 99, paddingHorizontal: 10, paddingVertical: 6 },
-  smallBtn: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
+  cardImage: {
+    width: "100%",
+    height: 150,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  row: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  chip: {
+    borderWidth: 1,
+    borderRadius: 99,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  smallBtn: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  previewContainer: {
+    position: "relative",
+    alignItems: "center",
+  },
+  previewImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+  },
+  removePhoto: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 20,
+    padding: 5,
+  },
 });
