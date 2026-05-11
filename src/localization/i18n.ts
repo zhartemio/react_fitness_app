@@ -33,6 +33,12 @@ export const translations = {
     login: 'Вход',
     location: 'Моя геолокация',
     sync: 'Обновить облачные данные',
+    imageUri: 'URL/URI изображения для ImageKit',
+    uploadImage: 'Загрузить в ImageKit',
+    imageUploading: 'Загрузка...',
+    removeImage: 'Убрать изображение',
+    imageUriRequired: 'Укажите URL или URI изображения',
+    imageUploadError: 'Не удалось загрузить изображение',
   },
   en: {
     home: 'Workouts',
@@ -66,6 +72,12 @@ export const translations = {
     login: 'Login',
     location: 'My location',
     sync: 'Refresh cloud data',
+    imageUri: 'Image URL/URI for ImageKit',
+    uploadImage: 'Upload to ImageKit',
+    imageUploading: 'Uploading...',
+    removeImage: 'Remove image',
+    imageUriRequired: 'Enter an image URL or URI',
+    imageUploadError: 'Could not upload image',
   },
 };
 

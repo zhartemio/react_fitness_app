@@ -6,7 +6,11 @@ export interface WorkoutRecord {
   description: string;
   date: string;
   category: 'cardio' | 'strength' | 'stretch';
+  imageUrl?: string;
+  imageFileId?: string;
+  imageFilePath?: string;
 }
+
 
 export interface WeatherInfo {
   temperature: number;

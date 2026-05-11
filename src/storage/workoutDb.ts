@@ -19,15 +19,33 @@ async function tryInitSQLite() {
       return false;
     }
 
-    db.execAsync?.(`
+    await db.execAsync?.(`
       CREATE TABLE IF NOT EXISTS workouts (
         id TEXT PRIMARY KEY NOT NULL,
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         date TEXT NOT NULL,
-        category TEXT NOT NULL
+        category TEXT NOT NULL,
+        imageUrl TEXT,
+        imageFileId TEXT,
+        imageFilePath TEXT
       );
     `);
+
+    const columns = (await db.getAllAsync?.('PRAGMA table_info(workouts);')) ?? [];
+    const columnNames = new Set(columns.map((column: { name: string }) => column.name));
+
+    if (!columnNames.has('imageUrl')) {
+      await db.execAsync?.('ALTER TABLE workouts ADD COLUMN imageUrl TEXT;');
+    }
+
+    if (!columnNames.has('imageFileId')) {
+      await db.execAsync?.('ALTER TABLE workouts ADD COLUMN imageFileId TEXT;');
+    }
+
+    if (!columnNames.has('imageFilePath')) {
+      await db.execAsync?.('ALTER TABLE workouts ADD COLUMN imageFilePath TEXT;');
+    }
 
     sqliteAvailable = true;
     return true;
@@ -70,8 +88,17 @@ export async function upsertWorkout(record: WorkoutRecord): Promise<void> {
   }
 
   await db.runAsync?.(
-    'INSERT OR REPLACE INTO workouts (id, title, description, date, category) VALUES (?, ?, ?, ?, ?);',
-    [record.id, record.title, record.description, record.date, record.category]
+    'INSERT OR REPLACE INTO workouts (id, title, description, date, category, imageUrl, imageFileId, imageFilePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
+    [
+      record.id,
+      record.title,
+      record.description,
+      record.date,
+      record.category,
+      record.imageUrl ?? null,
+      record.imageFileId ?? null,
+      record.imageFilePath ?? null,
+    ]
   );
 }
 

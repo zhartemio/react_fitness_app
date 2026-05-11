@@ -38,3 +38,29 @@ npm run start
 ## Важно
 
 Из-за ограничений окружения зависимости для production-реализации (Firebase/SQLite/Push notifications) не добавлялись. В проекте сделаны учебные аналоги на встроенных API.
+
+## ImageKit
+
+Загрузка изображений реализована через `src/services/imageService.ts`. Клиентское приложение не хранит private key ImageKit: для безопасной загрузки нужен backend endpoint, который возвращает одноразовые параметры `signature`, `expire` и `token`.
+
+Перед запуском задайте переменные окружения:
+
+```bash
+export EXPO_PUBLIC_IMAGEKIT_PUBLIC_KEY="your_public_key"
+export EXPO_PUBLIC_IMAGEKIT_URL_ENDPOINT="https://ik.imagekit.io/your_imagekit_id"
+export EXPO_PUBLIC_IMAGEKIT_AUTH_ENDPOINT="https://your-backend.example.com/imagekit-auth"
+npm run start
+```
+
+Пример ответа `EXPO_PUBLIC_IMAGEKIT_AUTH_ENDPOINT`:
+
+```json
+{
+  "signature": "generated_signature",
+  "expire": 1710000000,
+  "token": "unique_upload_token",
+  "publicKey": "your_public_key"
+}
+```
+
+В форме тренировки можно указать URL/URI изображения, загрузить его в ImageKit и сохранить полученные `url`, `fileId`, `filePath` вместе с записью тренировки. При отображении списка и детального экрана приложение получает картинку обратно по ImageKit CDN URL.
