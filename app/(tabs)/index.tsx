@@ -7,8 +7,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { t } from '@/src/localization/i18n';
 import { WorkoutRecord } from '@/src/models/types';
-import { getImageKitImageUrl, uploadImageToImageKit } from '@/src/services/imageService';
+import { getImageKitImageUrl } from '@/src/services/imageService';
 import { useApp } from '@/src/viewmodels/AppContext';
+import { useWorkoutImageUpload } from '@/src/viewmodels/useWorkoutImageUpload';
 
 const categories: WorkoutRecord['category'][] = ['cardio', 'strength', 'stretch'];
 
@@ -21,66 +22,41 @@ export default function HomeScreen() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<WorkoutRecord['category']>('cardio');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [imageUri, setImageUri] = useState('');
-  const [imageUrl, setImageUrl] = useState<string | undefined>();
-  const [imageFileId, setImageFileId] = useState<string | undefined>();
-  const [imageFilePath, setImageFilePath] = useState<string | undefined>();
-  const [isUploading, setIsUploading] = useState(false);
+  const workoutImage = useWorkoutImageUpload();
 
   const date = useMemo(() => new Date().toISOString(), []);
-  const previewUrl = getImageKitImageUrl(imageUrl || imageUri);
 
   const resetForm = () => {
     setTitle('');
     setDescription('');
     setEditingId(null);
-    setImageUri('');
-    setImageUrl(undefined);
-    setImageFileId(undefined);
-    setImageFilePath(undefined);
+    workoutImage.reset();
   };
 
   const uploadImage = async () => {
-    const source = imageUri.trim();
-
-    if (!source) {
+    if (!workoutImage.imageUri.trim()) {
       Alert.alert('ImageKit', t(language, 'imageUriRequired'));
       return null;
     }
 
-    setIsUploading(true);
-
     try {
-      const uploaded = await uploadImageToImageKit(source, {
-        tags: ['fitness-app', category],
-      });
-      setImageUrl(uploaded.url);
-      setImageFileId(uploaded.fileId);
-      setImageFilePath(uploaded.filePath);
-      setImageUri('');
-      return uploaded;
+      return await workoutImage.uploadPendingImage({ category });
     } catch (error) {
       Alert.alert('ImageKit', error instanceof Error ? error.message : t(language, 'imageUploadError'));
       return null;
-    } finally {
-      setIsUploading(false);
     }
   };
 
   const submit = async () => {
     if (!title.trim()) return;
 
-    let nextImageUrl = imageUrl;
-    let nextImageFileId = imageFileId;
-    let nextImageFilePath = imageFilePath;
+    let nextImage = workoutImage.metadata;
 
-    if (imageUri.trim()) {
+    if (workoutImage.imageUri.trim()) {
       const uploaded = await uploadImage();
       if (!uploaded) return;
 
-      nextImageUrl = uploaded.url;
-      nextImageFileId = uploaded.fileId;
-      nextImageFilePath = uploaded.filePath;
+      nextImage = uploaded;
     }
 
     await workouts.save({
@@ -89,9 +65,9 @@ export default function HomeScreen() {
       description,
       date,
       category,
-      imageUrl: nextImageUrl,
-      imageFileId: nextImageFileId,
-      imageFilePath: nextImageFilePath,
+      imageUrl: nextImage.imageUrl,
+      imageFileId: nextImage.imageFileId,
+      imageFilePath: nextImage.imageFilePath,
     });
 
     resetForm();
@@ -132,31 +108,21 @@ export default function HomeScreen() {
         placeholder={t(language, 'imageUri')}
         placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
         style={[styles.input, inputColors]}
-        value={imageUri}
-        onChangeText={(value) => {
-          setImageUri(value);
-          setImageUrl(undefined);
-          setImageFileId(undefined);
-          setImageFilePath(undefined);
-        }}
+        value={workoutImage.imageUri}
+        onChangeText={workoutImage.setImageSource}
         autoCapitalize="none"
       />
 
-      {!!previewUrl && <Image source={{ uri: previewUrl }} style={styles.preview} contentFit="cover" />}
+      {!!workoutImage.previewUrl && <Image source={{ uri: workoutImage.previewUrl }} style={styles.preview} contentFit="cover" />}
 
       <View style={styles.row}>
-        <Pressable style={[styles.smallBtn, buttonStyle]} onPress={uploadImage} disabled={isUploading}>
-          <ThemedText>{isUploading ? t(language, 'imageUploading') : t(language, 'uploadImage')}</ThemedText>
+        <Pressable style={[styles.smallBtn, buttonStyle]} onPress={uploadImage} disabled={workoutImage.isUploading}>
+          <ThemedText>{workoutImage.isUploading ? t(language, 'imageUploading') : t(language, 'uploadImage')}</ThemedText>
         </Pressable>
-        {(!!imageUrl || !!imageUri) && (
+        {workoutImage.hasImage && (
           <Pressable
             style={[styles.smallBtn, { borderColor: isDark ? '#754A4A' : '#999999', backgroundColor: isDark ? '#2A1E1E' : '#FFFFFF' }]}
-            onPress={() => {
-              setImageUri('');
-              setImageUrl(undefined);
-              setImageFileId(undefined);
-              setImageFilePath(undefined);
-            }}>
+            onPress={workoutImage.clearImage}>
             <ThemedText>{t(language, 'removeImage')}</ThemedText>
           </Pressable>
         )}
@@ -177,7 +143,7 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      <Pressable style={[styles.button, buttonStyle]} onPress={submit} disabled={isUploading}>
+      <Pressable style={[styles.button, buttonStyle]} onPress={submit} disabled={workoutImage.isUploading}>
         <ThemedText>{editingId ? t(language, 'edit') : t(language, 'add')}</ThemedText>
       </Pressable>
 
@@ -230,10 +196,7 @@ export default function HomeScreen() {
                   setTitle(item.title);
                   setDescription(item.description);
                   setCategory(item.category);
-                  setImageUri('');
-                  setImageUrl(item.imageUrl);
-                  setImageFileId(item.imageFileId);
-                  setImageFilePath(item.imageFilePath);
+                  workoutImage.loadFromRecord(item);
                 }}>
                 <ThemedText>{t(language, 'edit')}</ThemedText>
               </Pressable>
