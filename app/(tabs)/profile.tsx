@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Pressable, Share, StyleSheet, TextInput } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { Typography } from '@/constants/typography';
 import { ThemedView } from '@/components/themed-view';
 import { t } from '@/src/localization/i18n';
 import { User } from '@/src/models/types';
@@ -50,6 +51,8 @@ export default function ProfileScreen() {
       {!!user && <ThemedText>Logged as: {user.email}</ThemedText>}
 
       <TextInput
+        allowFontScaling={false}
+        maxFontSizeMultiplier={Typography.maxFontSizeMultiplier}
         style={[styles.input, inputColors]}
         placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
         placeholder={t(language, 'email')}
@@ -57,6 +60,8 @@ export default function ProfileScreen() {
         onChangeText={setEmail}
       />
       <TextInput
+        allowFontScaling={false}
+        maxFontSizeMultiplier={Typography.maxFontSizeMultiplier}
         style={[styles.input, inputColors]}
         placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
         placeholder={t(language, 'password')}
@@ -99,6 +104,6 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 10 },
-  input: { borderWidth: 1, borderRadius: 10, padding: 10 },
+  input: { borderWidth: 1, borderRadius: 10, padding: 8, fontSize: Typography.inputFontSize, lineHeight: Typography.inputLineHeight },
   btn: { borderWidth: 1, borderRadius: 10, padding: 10, alignItems: 'center' },
 });

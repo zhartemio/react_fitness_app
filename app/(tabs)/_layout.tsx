@@ -1,8 +1,10 @@
 import { Tabs } from "expo-router";
 import React from "react";
+import { StyleSheet } from "react-native";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { Colors } from "@/constants/theme";
+import { Typography } from "@/constants/typography";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { t } from "@/src/localization/i18n";
 import { useApp } from "@/src/viewmodels/AppContext";
@@ -19,6 +21,8 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: true,
         tabBarButton: HapticTab,
+        tabBarLabelStyle: styles.tabBarLabel,
+        headerTitleStyle: styles.headerTitle,
       }}
     >
       <Tabs.Screen
@@ -60,3 +64,13 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBarLabel: {
+    fontSize: Typography.tabLabelFontSize,
+    lineHeight: Typography.tabLabelFontSize + 2,
+  },
+  headerTitle: {
+    fontSize: Typography.headerTitleFontSize,
+  },
+});

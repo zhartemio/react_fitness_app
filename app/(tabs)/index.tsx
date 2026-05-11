@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { Typography } from '@/constants/typography';
 import { ThemedView } from '@/components/themed-view';
 import { t } from '@/src/localization/i18n';
 import { WorkoutRecord } from '@/src/models/types';
@@ -93,6 +94,8 @@ export default function HomeScreen() {
       <ThemedText type="title">{t(language, "home")}</ThemedText>
 
       <TextInput
+        allowFontScaling={false}
+        maxFontSizeMultiplier={Typography.maxFontSizeMultiplier}
         placeholder={t(language, "title")}
         placeholderTextColor={isDark ? "#93A0B8" : "#6B7280"}
         style={[styles.input, inputColors]}
@@ -100,6 +103,8 @@ export default function HomeScreen() {
         onChangeText={setTitle}
       />
       <TextInput
+        allowFontScaling={false}
+        maxFontSizeMultiplier={Typography.maxFontSizeMultiplier}
         placeholder={t(language, "description")}
         placeholderTextColor={isDark ? "#93A0B8" : "#6B7280"}
         style={[styles.input, styles.area, inputColors]}
@@ -109,6 +114,8 @@ export default function HomeScreen() {
       />
 
       <TextInput
+        allowFontScaling={false}
+        maxFontSizeMultiplier={Typography.maxFontSizeMultiplier}
         placeholder={t(language, 'imageUri')}
         placeholderTextColor={isDark ? '#93A0B8' : '#6B7280'}
         style={[styles.input, inputColors]}
@@ -158,6 +165,8 @@ export default function HomeScreen() {
       </Pressable>
 
       <TextInput
+        allowFontScaling={false}
+        maxFontSizeMultiplier={Typography.maxFontSizeMultiplier}
         placeholder={t(language, "search")}
         placeholderTextColor={isDark ? "#93A0B8" : "#6B7280"}
         style={[styles.input, inputColors]}
@@ -227,7 +236,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 10 },
-  input: { borderWidth: 1, borderRadius: 10, padding: 10 },
+  input: { borderWidth: 1, borderRadius: 10, padding: 8, fontSize: Typography.inputFontSize, lineHeight: Typography.inputLineHeight },
   area: { minHeight: 70, textAlignVertical: "top" },
   button: {
     padding: 10,
